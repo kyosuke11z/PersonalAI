@@ -1,0 +1,491 @@
+<Window x:Class="PersonalAI.UserPreferencesWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:PersonalAI"
+        mc:Ignorable="d"
+        Title="ตั้งค่านิสัยส่วนตัว" Height="700" Width="900"
+        WindowStartupLocation="CenterScreen"
+        Background="#1A1B22">
+    
+    <Window.Resources>
+        <!-- Styles for buttons - 2025 Neomorphic Style -->
+        <Style x:Key="ModernButton" TargetType="Button">
+            <Setter Property="Background" Value="#2D2F39"/>
+            <Setter Property="Foreground" Value="#FFFFFF"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Padding" Value="20,12"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Grid>
+                            <Border x:Name="Shadow" Background="#1A1B22" 
+                                    CornerRadius="12" Margin="4,4,0,0"/>
+                            <Border x:Name="ButtonSurface" Background="{TemplateBinding Background}" 
+                                    CornerRadius="12" Padding="{TemplateBinding Padding}">
+                                <Border.Effect>
+                                    <DropShadowEffect BlurRadius="15" ShadowDepth="0" Opacity="0.3" Color="#000000"/>
+                                </Border.Effect>
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#4E4FEB"/>
+                </Trigger>
+                <Trigger Property="IsPressed" Value="True">
+                    <Setter Property="Background" Value="#3A3BC8"/>
+                </Trigger>
+                <Trigger Property="IsEnabled" Value="False">
+                    <Setter Property="Background" Value="#4A4A57"/>
+                    <Setter Property="Opacity" Value="0.7"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+        
+        <!-- Style for secondary buttons - 2025 Accent Style -->
+        <Style x:Key="SecondaryButton" TargetType="Button" BasedOn="{StaticResource ModernButton}">
+            <Setter Property="Background" Value="#FF4D6A"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#FF6B83"/>
+                </Trigger>
+                <Trigger Property="IsPressed" Value="True">
+                    <Setter Property="Background" Value="#E43F5A"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+        
+        <!-- Style for text boxes - 2025 Glassmorphism Style -->
+        <Style x:Key="ModernTextBox" TargetType="TextBox">
+            <Setter Property="Background" Value="#2D2F3980"/>
+            <Setter Property="Foreground" Value="#FFFFFF"/>
+            <Setter Property="Padding" Value="15,12"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border Background="{TemplateBinding Background}" 
+                                BorderBrush="{TemplateBinding BorderBrush}" 
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="12">
+                            <Border.Effect>
+                                <DropShadowEffect BlurRadius="10" ShadowDepth="0" Opacity="0.2" Color="#000000"/>
+                            </Border.Effect>
+                            <ScrollViewer x:Name="PART_ContentHost" Margin="{TemplateBinding Padding}"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsFocused" Value="True">
+                    <Setter Property="Background" Value="#3A3BC880"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+        
+        <!-- Style for ComboBox - 2025 Glassmorphism Style -->
+        <Style x:Key="ModernComboBox" TargetType="ComboBox">
+            <Setter Property="Background" Value="#2D2F3980"/>
+            <Setter Property="Foreground" Value="#FFFFFF"/>
+            <Setter Property="Padding" Value="15,12"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ComboBox">
+                        <Grid>
+                            <Border Background="{TemplateBinding Background}" 
+                                    BorderBrush="{TemplateBinding BorderBrush}" 
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    CornerRadius="12">
+                                <Border.Effect>
+                                    <DropShadowEffect BlurRadius="10" ShadowDepth="0" Opacity="0.2" Color="#000000"/>
+                                </Border.Effect>
+                                <Grid>
+                                    <ToggleButton x:Name="ToggleButton" 
+                                                  BorderBrush="{TemplateBinding BorderBrush}"
+                                                  Background="Transparent"
+                                                  Foreground="{TemplateBinding Foreground}"
+                                                  IsChecked="{Binding Path=IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
+                                                  ClickMode="Press">
+                                        <ToggleButton.Template>
+                                            <ControlTemplate TargetType="ToggleButton">
+                                                <Grid Background="Transparent">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition />
+                                                        <ColumnDefinition Width="20" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <ContentPresenter Grid.Column="0"
+                                                                      Margin="3"
+                                                                      HorizontalAlignment="Left"
+                                                                      VerticalAlignment="Center"
+                                                                      Content="{TemplateBinding Content}"
+                                                                      ContentTemplate="{TemplateBinding ContentTemplate}"
+                                                                      ContentTemplateSelector="{TemplateBinding ContentTemplateSelector}" />
+                                                    <Path x:Name="Arrow" Grid.Column="1"
+                                                          HorizontalAlignment="Center"
+                                                          VerticalAlignment="Center"
+                                                          Data="M0,0 L5,5 L10,0"
+                                                          Fill="{TemplateBinding Foreground}" />
+                                                </Grid>
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property="IsChecked" Value="True">
+                                                        <Setter TargetName="Arrow" Property="Data" Value="M0,5 L5,0 L10,5" />
+                                                    </Trigger>
+                                                </ControlTemplate.Triggers>
+                                            </ControlTemplate>
+                                        </ToggleButton.Template>
+                                    </ToggleButton>
+                                    <ContentPresenter Name="ContentSite"
+                                                      Margin="{TemplateBinding Padding}"
+                                                      HorizontalAlignment="Left"
+                                                      VerticalAlignment="Center"
+                                                      Content="{TemplateBinding SelectionBoxItem}"
+                                                      ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
+                                                      ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}" />
+                                    <Popup Name="Popup"
+                                           AllowsTransparency="True"
+                                           Focusable="False"
+                                           IsOpen="{TemplateBinding IsDropDownOpen}"
+                                           Placement="Bottom"
+                                           PopupAnimation="Slide">
+                                        <Grid Name="DropDown"
+                                              MinWidth="{TemplateBinding ActualWidth}"
+                                              MaxHeight="{TemplateBinding MaxDropDownHeight}"
+                                              SnapsToDevicePixels="True">
+                                            <Border Background="#2D2F39"
+                                                    BorderBrush="#FFFFFF15"
+                                                    BorderThickness="1"
+                                                    CornerRadius="8">
+                                                <ScrollViewer Margin="4" SnapsToDevicePixels="True">
+                                                    <ItemsPresenter KeyboardNavigation.DirectionalNavigation="Contained" />
+                                                </ScrollViewer>
+                                            </Border>
+                                        </Grid>
+                                    </Popup>
+                                </Grid>
+                            </Border>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Foreground" Value="#AAAAAA" />
+                            </Trigger>
+                            <Trigger Property="IsDropDownOpen" Value="True">
+                                <Setter Property="Background" Value="#3A3BC880" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsFocused" Value="True">
+                    <Setter Property="Background" Value="#3A3BC880"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+        
+        <!-- Style for CheckBox - 2025 Glassmorphism Style -->
+        <Style x:Key="ModernCheckBox" TargetType="CheckBox">
+            <Setter Property="Foreground" Value="#FFFFFF"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Margin" Value="0,0,0,10"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="CheckBox">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            
+                            <!-- CheckBox Background -->
+                            <Border x:Name="CheckBoxBorder" 
+                                    Grid.Column="0" 
+                                    Width="22" 
+                                    Height="22" 
+                                    Background="#2D2F3980" 
+                                    BorderBrush="#FFFFFF15" 
+                                    BorderThickness="1" 
+                                    CornerRadius="6"
+                                    Margin="0,0,10,0">
+                                <Border.Effect>
+                                    <DropShadowEffect BlurRadius="5" ShadowDepth="0" Opacity="0.2" Color="#000000"/>
+                                </Border.Effect>
+                                
+                                <!-- CheckMark -->
+                                <Path x:Name="CheckMark"
+                                      Width="12"
+                                      Height="12"
+                                      Data="M1,5 L4,9 L9,1"
+                                      Stroke="#4E4FEB"
+                                      StrokeThickness="2"
+                                      Stretch="Uniform"
+                                      Visibility="Collapsed"/>
+                            </Border>
+                            
+                            <!-- Content -->
+                            <ContentPresenter Grid.Column="1" 
+                                              VerticalAlignment="Center" 
+                                              HorizontalAlignment="Left" 
+                                              RecognizesAccessKey="True"/>
+                        </Grid>
+                        
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="CheckMark" Property="Visibility" Value="Visible"/>
+                                <Setter TargetName="CheckBoxBorder" Property="Background" Value="#3A3BC880"/>
+                                <Setter TargetName="CheckBoxBorder" Property="BorderBrush" Value="#4E4FEB"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="CheckBoxBorder" Property="Background" Value="#3A3BC880"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="CheckBoxBorder" Property="Background" Value="#4E4FEB50"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.5"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        
+        <!-- Style for card panels - 2025 Glassmorphism Style -->
+        <Style x:Key="CardPanel" TargetType="Border">
+            <Setter Property="Background" Value="#2D2F3980"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="#FFFFFF15"/>
+            <Setter Property="CornerRadius" Value="16"/>
+            <Setter Property="Padding" Value="20"/>
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect BlurRadius="20" ShadowDepth="0" Opacity="0.3" Color="#000000"/>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        
+        <!-- Style for empty button -->
+        <Style x:Key="EmptyButtonStyle" TargetType="RepeatButton">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RepeatButton">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="2" Height="4"/>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        
+        <!-- Style for transparent button -->
+        <Style x:Key="TransparentButtonStyle" TargetType="RepeatButton">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RepeatButton">
+                        <Border Background="Transparent" Height="4"/>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        
+        <!-- Style for sliders -->
+        <Style x:Key="ModernSlider" TargetType="Slider">
+            <Setter Property="Foreground" Value="#4E4FEB"/>
+            <Setter Property="Background" Value="#2D2F39"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Slider">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto" MinHeight="{TemplateBinding MinHeight}"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            <Border x:Name="TrackBackground" Grid.Row="1" Height="4" CornerRadius="2" Background="{TemplateBinding Background}" Margin="0"/>
+                            <Track x:Name="PART_Track" Grid.Row="1">
+                                <Track.DecreaseRepeatButton>
+                                    <RepeatButton Command="Slider.DecreaseLarge" Background="{TemplateBinding Foreground}" Opacity="0.8" Style="{StaticResource EmptyButtonStyle}"/>
+                                </Track.DecreaseRepeatButton>
+                                <Track.IncreaseRepeatButton>
+                                    <RepeatButton Command="Slider.IncreaseLarge" Style="{StaticResource TransparentButtonStyle}"/>
+                                </Track.IncreaseRepeatButton>
+                                <Track.Thumb>
+                                    <Thumb>
+                                        <Thumb.Template>
+                                            <ControlTemplate TargetType="Thumb">
+                                                <Grid>
+                                                    <Ellipse Width="16" Height="16" Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Slider}}">
+                                                        <Ellipse.Effect>
+                                                            <DropShadowEffect BlurRadius="4" ShadowDepth="0" Opacity="0.3" Color="#000000"/>
+                                                        </Ellipse.Effect>
+                                                    </Ellipse>
+                                                </Grid>
+                                            </ControlTemplate>
+                                        </Thumb.Template>
+                                    </Thumb>
+                                </Track.Thumb>
+                            </Track>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+    
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        
+        <!-- หัวข้อ -->
+        <TextBlock Grid.Row="0" Text="ตั้งค่านิสัยส่วนตัว" FontSize="32" FontWeight="Bold" Margin="0,0,0,20" Foreground="#4E4FEB">
+            <TextBlock.Effect>
+                <DropShadowEffect BlurRadius="15" ShadowDepth="0" Opacity="0.6" Color="#4E4FEB"/>
+            </TextBlock.Effect>
+        </TextBlock>
+        
+        <!-- เนื้อหาหลัก -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <StackPanel>
+                <!-- ข้อมูลพื้นฐาน -->
+                <Border Style="{StaticResource CardPanel}" Margin="0,0,0,20">
+                    <StackPanel>
+                        <TextBlock Text="ข้อมูลพื้นฐาน" FontSize="20" FontWeight="SemiBold" Foreground="#FFFFFF" Margin="0,0,0,15"/>
+                        
+                        <Grid Margin="0,0,0,10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="150"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="ชื่อที่ต้องการให้เรียก" VerticalAlignment="Center" Foreground="#FFFFFF"/>
+                            <TextBox Grid.Column="1" x:Name="UserNameTextBox" Style="{StaticResource ModernTextBox}"/>
+                        </Grid>
+                        
+                        <Grid Margin="0,0,0,10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="150"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="อายุ" VerticalAlignment="Center" Foreground="#FFFFFF"/>
+                            <TextBox Grid.Column="1" x:Name="AgeTextBox" Style="{StaticResource ModernTextBox}"/>
+                        </Grid>
+                        
+                        <Grid Margin="0,0,0,10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="150"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="เพศ" VerticalAlignment="Center" Foreground="#FFFFFF"/>
+                            <ComboBox Grid.Column="1" x:Name="GenderComboBox" Style="{StaticResource ModernComboBox}">
+                                <ComboBoxItem Content="ชาย"/>
+                                <ComboBoxItem Content="หญิง"/>
+                                <ComboBoxItem Content="ไม่ระบุ"/>
+                                <ComboBoxItem Content="อื่นๆ"/>
+                            </ComboBox>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+                
+                <!-- ความชอบ/ไม่ชอบกิจกรรม -->
+                <Border Style="{StaticResource CardPanel}" Margin="0,0,0,20">
+                    <StackPanel>
+                        <TextBlock Text="ความชอบ/ไม่ชอบกิจกรรม" FontSize="20" FontWeight="SemiBold" Foreground="#FFFFFF" Margin="0,0,0,15"/>
+                        <TextBlock Text="เลื่อนไปทางซ้ายหากไม่ชอบ เลื่อนไปทางขวาหากชอบ" Foreground="#FFFFFF" Opacity="0.7" Margin="0,0,0,15"/>
+                        
+                        <ItemsControl x:Name="ActivityPreferencesControl">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid Margin="0,0,0,15">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="150"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="50"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0" Text="{Binding Key}" VerticalAlignment="Center" Foreground="#FFFFFF"/>
+                                        <Slider Grid.Column="1" Style="{StaticResource ModernSlider}" Minimum="-5" Maximum="5" Value="{Binding Value, Mode=TwoWay}" 
+                                                TickFrequency="1" IsSnapToTickEnabled="True" TickPlacement="BottomRight"/>
+                                        <TextBlock Grid.Column="2" Text="{Binding Value}" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="#FFFFFF"/>
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </Border>
+                
+                <!-- ความชอบ/ไม่ชอบสภาพแวดล้อม -->
+                <Border Style="{StaticResource CardPanel}" Margin="0,0,0,20">
+                    <StackPanel>
+                        <TextBlock Text="ความชอบ/ไม่ชอบสภาพแวดล้อม" FontSize="20" FontWeight="SemiBold" Foreground="#FFFFFF" Margin="0,0,0,15"/>
+                        <TextBlock Text="เลื่อนไปทางซ้ายหากไม่ชอบ เลื่อนไปทางขวาหากชอบ" Foreground="#FFFFFF" Opacity="0.7" Margin="0,0,0,15"/>
+                        
+                        <ItemsControl x:Name="EnvironmentPreferencesControl">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid Margin="0,0,0,15">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="150"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="50"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0" Text="{Binding Key}" VerticalAlignment="Center" Foreground="#FFFFFF"/>
+                                        <Slider Grid.Column="1" Style="{StaticResource ModernSlider}" Minimum="-5" Maximum="5" Value="{Binding Value, Mode=TwoWay}" 
+                                                TickFrequency="1" IsSnapToTickEnabled="True" TickPlacement="BottomRight"/>
+                                        <TextBlock Grid.Column="2" Text="{Binding Value}" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="#FFFFFF"/>
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </Border>
+                
+                <!-- ข้อมูลสุขภาพ -->
+                <Border Style="{StaticResource CardPanel}" Margin="0,0,0,20">
+                    <StackPanel>
+                        <TextBlock Text="ข้อมูลสุขภาพ" FontSize="20" FontWeight="SemiBold" Foreground="#FFFFFF" Margin="0,0,0,15"/>
+                        <TextBlock Text="เลือกโรคประจำตัวที่คุณมี (ข้อมูลนี้จะช่วยให้เราแนะนำกิจกรรมที่เหมาะสมกับคุณ)" Foreground="#FFFFFF" Opacity="0.7" Margin="0,0,0,15"/>
+                        
+                        <ItemsControl x:Name="HealthConditionsControl">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <CheckBox Content="{Binding Key}" IsChecked="{Binding Value, Mode=TwoWay}" Style="{StaticResource ModernCheckBox}"/>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </Border>
+                
+                <!-- ข้อมูลเพิ่มเติม -->
+                <Border Style="{StaticResource CardPanel}" Margin="0,0,0,20">
+                    <StackPanel>
+                        <TextBlock Text="ข้อมูลเพิ่มเติม" FontSize="20" FontWeight="SemiBold" Foreground="#FFFFFF" Margin="0,0,0,15"/>
+                        
+                        <TextBlock Text="สิ่งที่แพ้ (คั่นด้วยเครื่องหมายจุลภาค)" Foreground="#FFFFFF" Margin="0,0,0,5"/>
+                        <TextBox x:Name="AllergiesTextBox" Style="{StaticResource ModernTextBox}" Margin="0,0,0,15"/>
+                        
+                        <TextBlock Text="สิ่งที่ชอบเพิ่มเติม (คั่นด้วยเครื่องหมายจุลภาค)" Foreground="#FFFFFF" Margin="0,0,0,5"/>
+                        <TextBox x:Name="CustomPreferencesTextBox" Style="{StaticResource ModernTextBox}" Margin="0,0,0,15"/>
+                        
+                        <TextBlock Text="สิ่งที่ไม่ชอบเพิ่มเติม (คั่นด้วยเครื่องหมายจุลภาค)" Foreground="#FFFFFF" Margin="0,0,0,5"/>
+                        <TextBox x:Name="CustomDislikesTextBox" Style="{StaticResource ModernTextBox}"/>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </ScrollViewer>
+        
+        <!-- ปุ่มด้านล่าง -->
+        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0">
+            <Button x:Name="SaveButton" Content="บันทึก" Style="{StaticResource ModernButton}" Margin="0,0,10,0" Click="SaveButton_Click"/>
+            <Button x:Name="CancelButton" Content="ยกเลิก" Style="{StaticResource SecondaryButton}" Click="CancelButton_Click"/>
+        </StackPanel>
+    </Grid>
+</Window>
