@@ -4,6 +4,26 @@
              xmlns:local="clr-namespace:PersonalAI"
              Startup="Application_Startup">
     <Application.Resources>
-         
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <!-- โหลดธีมเริ่มต้น (จะถูกแทนที่โดย ThemeManager ภายหลัง) -->
+                <ResourceDictionary Source="pack://application:,,,/Themes/DarkTheme.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+            
+            <!-- Style for ComboBox -->
+            <Style x:Key="ModernComboBox" TargetType="ComboBox">
+                <Setter Property="Background" Value="{StaticResource SecondaryBackgroundBrush}"/>
+                <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+                <Setter Property="BorderThickness" Value="1"/>
+                <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
+                <Setter Property="Padding" Value="10,8"/>
+            </Style>
+            
+            <!-- Style for Slider -->
+            <Style x:Key="ModernSlider" TargetType="Slider">
+                <Setter Property="Background" Value="{StaticResource SecondaryBackgroundBrush}"/>
+                <Setter Property="Foreground" Value="{StaticResource AccentBrush}"/>
+            </Style>
+        </ResourceDictionary>
     </Application.Resources>
 </Application>

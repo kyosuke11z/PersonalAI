@@ -60,7 +60,11 @@ namespace PersonalAI
         /// </summary>
         private string BuildPrompt(string currentMessage)
         {
-            var prompt = $"คุณเป็นผู้ช่วย AI ส่วนตัวที่เป็นมิตรและเข้าใจความรู้สึกของผู้ใช้\n\n";
+            var personality = AIPersonality.Instance;
+            
+            // เพิ่มคำแนะนำบุคลิกภาพ
+            var prompt = personality.GeneratePersonalityPrompt();
+            prompt += "\n\n";
             
             // เพิ่มข้อมูลผู้ใช้
             prompt += $"ข้อมูลผู้ใช้:\n";

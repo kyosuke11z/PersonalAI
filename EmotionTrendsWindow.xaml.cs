@@ -6,6 +6,8 @@ using System.Windows;
 using OxyPlot;
 using OxyPlot.Series;
 using OxyPlot.Axes;
+using OxyPlot.Wpf;
+using OxyPlot.Annotations;
 
 namespace PersonalAI
 {
@@ -197,10 +199,37 @@ namespace PersonalAI
                     return;
                 }
                 
-                UpdatePositivityChart();
-                UpdateStressChart();
-                UpdateEmotionBarChart();
-                UpdateEmotionPieChart();
+                // ใช้ Task.Run เพื่อสร้างกราฟแบบ asynchronous
+                Task.Run(() => {
+                    // สร้างกราฟใน background thread
+                    var positivityModel = CreatePositivityChartModel();
+                    var stressModel = CreateStressChartModel();
+                    var barModel = CreateEmotionBarChartModel();
+                    var pieModel = CreateEmotionPieChartModel();
+                    
+                    // อัปเดต UI ใน UI thread
+                    Dispatcher.Invoke(() => {
+                        if (PositivityChart != null) {
+                            PositivityChart.Model = positivityModel;
+                            PositivityChart.InvalidatePlot(true);
+                        }
+                        
+                        if (StressChart != null) {
+                            StressChart.Model = stressModel;
+                            StressChart.InvalidatePlot(true);
+                        }
+                        
+                        if (EmotionBarChart != null) {
+                            EmotionBarChart.Model = barModel;
+                            EmotionBarChart.InvalidatePlot(true);
+                        }
+                        
+                        if (EmotionPieChart != null) {
+                            EmotionPieChart.Model = pieModel;
+                            EmotionPieChart.InvalidatePlot(true);
+                        }
+                    });
+                });
             }
             catch (Exception ex)
             {
@@ -241,266 +270,231 @@ namespace PersonalAI
         }
         
         /// <summary>
-        /// อัปเดตกราฟแนวโน้มความเป็นบวก/ลบ
+        /// สร้างโมเดลกราฟความเป็นบวก/ลบ
         /// </summary>
-        private void UpdatePositivityChart()
+        private PlotModel CreatePositivityChartModel()
         {
-            if (PositivityChart == null) return;
+            // สร้างโมเดลกราฟพื้นฐาน
+            var model = CreatePlotModel();
+            model.Title = "แนวโน้มความเป็นบวก/ลบ";
+            model.TitleColor = OxyColors.White;
             
             // จัดเรียงข้อมูลตามวันที่
             var sortedData = _emotionData.OrderBy(e => e.Timestamp).ToList();
             
-            // ล้างข้อมูลเก่า
-            DateLabels.Clear();
-            
-            // สร้าง PlotModel ใหม่
-            var model = CreatePlotModel();
-            model.Title = "ความเป็นบวก/ลบ";
-            model.TitleColor = OxyColors.White;
-            
-            // สร้างข้อมูลสำหรับกราฟ
-            var lineSeries = new LineSeries
-            {
-                Color = OxyColors.Blue,
-                MarkerType = MarkerType.Circle,
-                MarkerSize = 6,
-                MarkerStroke = OxyColors.Blue,
-                MarkerFill = OxyColors.Blue,
-                StrokeThickness = 2
-            };
-            
-            // เพิ่มข้อมูลลงในกราฟ
-            for (int i = 0; i < sortedData.Count; i++)
-            {
-                lineSeries.Points.Add(new DataPoint(i, sortedData[i].PositivityScore));
-                DateLabels.Add(sortedData[i].Timestamp.ToString("dd/MM"));
-            }
-            
-            // สร้างแกน X และ Y
-            var xAxis = new CategoryAxis
+            // สร้างแกน X
+            var dateAxis = new DateTimeAxis
             {
                 Position = AxisPosition.Bottom,
+                StringFormat = "dd/MM",
                 Title = "วันที่",
                 TitleColor = OxyColors.White,
                 TextColor = OxyColors.White,
-                AxislineColor = OxyColors.White
+                TicklineColor = OxyColors.Gray,
+                MajorGridlineStyle = LineStyle.Dot,
+                MajorGridlineColor = OxyColor.FromArgb(40, 255, 255, 255)
             };
+            model.Axes.Add(dateAxis);
             
-            foreach (var label in DateLabels)
-            {
-                xAxis.Labels.Add(label);
-            }
-            
-            var yAxis = new LinearAxis
+            // สร้างแกน Y
+            var valueAxis = new LinearAxis
             {
                 Position = AxisPosition.Left,
-                Title = "คะแนน",
+                Minimum = 0,
+                Maximum = 10,
+                Title = "ระดับความเป็นบวก",
                 TitleColor = OxyColors.White,
                 TextColor = OxyColors.White,
-                AxislineColor = OxyColors.White,
-                Minimum = 0,
-                Maximum = 10
+                TicklineColor = OxyColors.Gray,
+                MajorGridlineStyle = LineStyle.Dot,
+                MajorGridlineColor = OxyColor.FromArgb(40, 255, 255, 255)
+            };
+            model.Axes.Add(valueAxis);
+            
+            // สร้างชุดข้อมูล
+            var positivitySeries = new LineSeries
+            {
+                Title = "ความเป็นบวก",
+                Color = OxyColor.FromRgb(78, 79, 235), // สีฟ้า
+                MarkerType = MarkerType.Circle,
+                MarkerSize = 4,
+                MarkerStroke = OxyColor.FromRgb(78, 79, 235),
+                MarkerFill = OxyColor.FromRgb(78, 79, 235),
+                StrokeThickness = 2
             };
             
-            // เพิ่มแกนและข้อมูลลงใน PlotModel
-            model.Axes.Add(xAxis);
-            model.Axes.Add(yAxis);
-            model.Series.Add(lineSeries);
+            // เพิ่มข้อมูลลงในชุดข้อมูล
+            foreach (var entry in sortedData)
+            {
+                positivitySeries.Points.Add(new DataPoint(DateTimeAxis.ToDouble(entry.Timestamp), entry.PositivityScore));
+            }
             
-            // อัปเดตกราฟ
-            PositivityChart.Model = model;
-            PositivityChart.InvalidatePlot(true);
+            model.Series.Add(positivitySeries);
+            
+            return model;
         }
         
         /// <summary>
-        /// อัปเดตกราฟแนวโน้มความเครียด
+        /// สร้างโมเดลกราฟความเครียด
         /// </summary>
-        private void UpdateStressChart()
+        private PlotModel CreateStressChartModel()
         {
-            if (StressChart == null) return;
-            
-            // จัดเรียงข้อมูลตามวันที่
-            var sortedData = _emotionData.OrderBy(e => e.Timestamp).ToList();
-            
-            // สร้าง PlotModel ใหม่
+            // สร้างโมเดลกราฟพื้นฐาน
             var model = CreatePlotModel();
             model.Title = "ระดับความเครียด";
             model.TitleColor = OxyColors.White;
             
-            // สร้างข้อมูลสำหรับกราฟ
-            var lineSeries = new LineSeries
-            {
-                Color = OxyColors.Red,
-                MarkerType = MarkerType.Circle,
-                MarkerSize = 6,
-                MarkerStroke = OxyColors.Red,
-                MarkerFill = OxyColors.Red,
-                StrokeThickness = 2
-            };
+            // จัดเรียงข้อมูลตามวันที่
+            var sortedData = _emotionData.OrderBy(e => e.Timestamp).ToList();
             
-            // เพิ่มข้อมูลลงในกราฟ
-            for (int i = 0; i < sortedData.Count; i++)
-            {
-                lineSeries.Points.Add(new DataPoint(i, sortedData[i].StressLevel));
-            }
-            
-            // สร้างแกน X และ Y
-            var xAxis = new CategoryAxis
+            // สร้างแกน X
+            var dateAxis = new DateTimeAxis
             {
                 Position = AxisPosition.Bottom,
+                StringFormat = "dd/MM",
                 Title = "วันที่",
                 TitleColor = OxyColors.White,
                 TextColor = OxyColors.White,
-                AxislineColor = OxyColors.White
+                TicklineColor = OxyColors.Gray,
+                MajorGridlineStyle = LineStyle.Dot,
+                MajorGridlineColor = OxyColor.FromArgb(40, 255, 255, 255)
             };
+            model.Axes.Add(dateAxis);
             
-            foreach (var label in DateLabels)
-            {
-                xAxis.Labels.Add(label);
-            }
-            
-            var yAxis = new LinearAxis
+            // สร้างแกน Y
+            var valueAxis = new LinearAxis
             {
                 Position = AxisPosition.Left,
-                Title = "คะแนน",
+                Minimum = 0,
+                Maximum = 10,
+                Title = "ระดับความเครียด",
                 TitleColor = OxyColors.White,
                 TextColor = OxyColors.White,
-                AxislineColor = OxyColors.White,
-                Minimum = 0,
-                Maximum = 10
+                TicklineColor = OxyColors.Gray,
+                MajorGridlineStyle = LineStyle.Dot,
+                MajorGridlineColor = OxyColor.FromArgb(40, 255, 255, 255)
+            };
+            model.Axes.Add(valueAxis);
+            
+            // สร้างชุดข้อมูล
+            var stressSeries = new LineSeries
+            {
+                Title = "ความเครียด",
+                Color = OxyColor.FromRgb(255, 77, 106), // สีชมพู
+                MarkerType = MarkerType.Circle,
+                MarkerSize = 4,
+                MarkerStroke = OxyColor.FromRgb(255, 77, 106),
+                MarkerFill = OxyColor.FromRgb(255, 77, 106),
+                StrokeThickness = 2
             };
             
-            // เพิ่มแกนและข้อมูลลงใน PlotModel
-            model.Axes.Add(xAxis);
-            model.Axes.Add(yAxis);
-            model.Series.Add(lineSeries);
+            // เพิ่มข้อมูลลงในชุดข้อมูล
+            foreach (var entry in sortedData)
+            {
+                stressSeries.Points.Add(new DataPoint(DateTimeAxis.ToDouble(entry.Timestamp), entry.StressLevel));
+            }
             
-            // อัปเดตกราฟ
-            StressChart.Model = model;
-            StressChart.InvalidatePlot(true);
+            model.Series.Add(stressSeries);
+            
+            return model;
         }
         
         /// <summary>
-        /// อัปเดตกราฟแท่งแสดงอารมณ์ย่อย
+        /// สร้างโมเดลกราฟแท่งอารมณ์ย่อย
         /// </summary>
-        private void UpdateEmotionBarChart()
+        private PlotModel CreateEmotionBarChartModel()
         {
-            if (EmotionBarChart == null) return;
-            
-            // วิเคราะห์อารมณ์เชิงลึก
-            var emotionAnalysis = AnalyzeDetailedEmotions();
-            
-            // สร้าง PlotModel ใหม่
+            // สร้างโมเดลกราฟพื้นฐาน
             var model = CreatePlotModel();
             model.Title = "อารมณ์ย่อย";
             model.TitleColor = OxyColors.White;
             
-            // สร้างข้อมูลสำหรับกราฟแท่ง
-            var barSeries = new BarSeries
-            {
-                IsStacked = false,
-                StrokeThickness = 1,
-                StrokeColor = OxyColors.White
-            };
+            // วิเคราะห์อารมณ์เชิงลึก
+            var emotionScores = AnalyzeDetailedEmotions();
             
-            // กำหนดสีสำหรับแต่ละแท่ง
-            var colors = new[] {
-                OxyColors.Yellow,
-                OxyColors.Blue,
-                OxyColors.Red,
-                OxyColors.Purple,
-                OxyColors.Gray
-            };
-            
-            // เพิ่มข้อมูลลงในกราฟ
-            barSeries.Items.Add(new BarItem { Value = emotionAnalysis.Happy, Color = colors[0] });
-            barSeries.Items.Add(new BarItem { Value = emotionAnalysis.Sad, Color = colors[1] });
-            barSeries.Items.Add(new BarItem { Value = emotionAnalysis.Angry, Color = colors[2] });
-            barSeries.Items.Add(new BarItem { Value = emotionAnalysis.Anxious, Color = colors[3] });
-            barSeries.Items.Add(new BarItem { Value = emotionAnalysis.Neutral, Color = colors[4] });
-            
-            // สร้างแกน X และ Y
-            var xAxis = new CategoryAxis
+            // สร้างแกน X
+            var categoryAxis = new CategoryAxis
             {
                 Position = AxisPosition.Bottom,
-                Title = "คะแนน",
-                TitleColor = OxyColors.White,
-                TextColor = OxyColors.White,
-                AxislineColor = OxyColors.White
-            };
-            
-            var yAxis = new CategoryAxis
-            {
-                Position = AxisPosition.Left,
                 Title = "อารมณ์",
                 TitleColor = OxyColors.White,
                 TextColor = OxyColors.White,
-                AxislineColor = OxyColors.White
+                TicklineColor = OxyColors.Gray,
+                ItemsSource = EmotionLabels
+            };
+            model.Axes.Add(categoryAxis);
+            
+            // สร้างแกน Y
+            var valueAxis = new LinearAxis
+            {
+                Position = AxisPosition.Left,
+                Minimum = 0,
+                Maximum = 10,
+                Title = "ระดับ",
+                TitleColor = OxyColors.White,
+                TextColor = OxyColors.White,
+                TicklineColor = OxyColors.Gray,
+                MajorGridlineStyle = LineStyle.Dot,
+                MajorGridlineColor = OxyColor.FromArgb(40, 255, 255, 255)
+            };
+            model.Axes.Add(valueAxis);
+            
+            // สร้างชุดข้อมูล
+            var barSeries = new BarSeries
+            {
+                Title = "ระดับอารมณ์",
+                FillColor = OxyColor.FromRgb(78, 79, 235),
+                StrokeColor = OxyColor.FromRgb(78, 79, 235),
+                StrokeThickness = 1
             };
             
-            foreach (var label in EmotionLabels)
-            {
-                yAxis.Labels.Add(label);
-            }
+            // เพิ่มข้อมูลลงในชุดข้อมูล
+            barSeries.Items.Add(new BarItem { Value = emotionScores.Happy });
+            barSeries.Items.Add(new BarItem { Value = emotionScores.Sad });
+            barSeries.Items.Add(new BarItem { Value = emotionScores.Angry });
+            barSeries.Items.Add(new BarItem { Value = emotionScores.Anxious });
+            barSeries.Items.Add(new BarItem { Value = emotionScores.Neutral });
             
-            // เพิ่มแกนและข้อมูลลงใน PlotModel
-            model.Axes.Add(xAxis);
-            model.Axes.Add(yAxis);
             model.Series.Add(barSeries);
             
-            // อัปเดตกราฟ
-            EmotionBarChart.Model = model;
-            EmotionBarChart.InvalidatePlot(true);
+            return model;
         }
         
         /// <summary>
-        /// อัปเดตกราฟวงกลมแสดงสัดส่วนอารมณ์
+        /// สร้างโมเดลกราฟวงกลมสัดส่วนอารมณ์
         /// </summary>
-        private void UpdateEmotionPieChart()
+        private PlotModel CreateEmotionPieChartModel()
         {
-            if (EmotionPieChart == null) return;
-            
-            // วิเคราะห์อารมณ์เชิงลึก
-            var emotionAnalysis = AnalyzeDetailedEmotions();
-            
-            // สร้าง PlotModel ใหม่
+            // สร้างโมเดลกราฟพื้นฐาน
             var model = CreatePlotModel();
             model.Title = "สัดส่วนอารมณ์";
             model.TitleColor = OxyColors.White;
             
-            // สร้างข้อมูลสำหรับกราฟวงกลม
+            // วิเคราะห์อารมณ์เชิงลึก
+            var emotionScores = AnalyzeDetailedEmotions();
+            
+            // สร้างชุดข้อมูล
             var pieSeries = new PieSeries
             {
                 StrokeThickness = 1,
                 InsideLabelFormat = "",
                 OutsideLabelFormat = "{1}: {0:0.0}",
                 AngleSpan = 360,
-                StartAngle = 0,
-                ExplodedDistance = 0.1
+                StartAngle = 0
             };
             
-            // กำหนดสีสำหรับแต่ละส่วน
-            var colors = new[] {
-                OxyColors.Yellow,
-                OxyColors.Blue,
-                OxyColors.Red,
-                OxyColors.Purple,
-                OxyColors.Gray
-            };
+            // เพิ่มข้อมูลลงในชุดข้อมูล
+            pieSeries.Slices.Add(new PieSlice(EmotionLabels[0], emotionScores.Happy) { Fill = OxyColor.FromRgb(78, 79, 235) });
+            pieSeries.Slices.Add(new PieSlice(EmotionLabels[1], emotionScores.Sad) { Fill = OxyColor.FromRgb(255, 77, 106) });
+            pieSeries.Slices.Add(new PieSlice(EmotionLabels[2], emotionScores.Angry) { Fill = OxyColor.FromRgb(255, 152, 0) });
+            pieSeries.Slices.Add(new PieSlice(EmotionLabels[3], emotionScores.Anxious) { Fill = OxyColor.FromRgb(0, 188, 212) });
+            pieSeries.Slices.Add(new PieSlice(EmotionLabels[4], emotionScores.Neutral) { Fill = OxyColor.FromRgb(158, 158, 158) });
             
-            // เพิ่มข้อมูลลงในกราฟ
-            pieSeries.Slices.Add(new PieSlice(EmotionLabels[0], emotionAnalysis.Happy) { Fill = colors[0] });
-            pieSeries.Slices.Add(new PieSlice(EmotionLabels[1], emotionAnalysis.Sad) { Fill = colors[1] });
-            pieSeries.Slices.Add(new PieSlice(EmotionLabels[2], emotionAnalysis.Angry) { Fill = colors[2] });
-            pieSeries.Slices.Add(new PieSlice(EmotionLabels[3], emotionAnalysis.Anxious) { Fill = colors[3] });
-            pieSeries.Slices.Add(new PieSlice(EmotionLabels[4], emotionAnalysis.Neutral) { Fill = colors[4] });
-            
-            // เพิ่มข้อมูลลงใน PlotModel
             model.Series.Add(pieSeries);
             
-            // อัปเดตกราฟ
-            EmotionPieChart.Model = model;
-            EmotionPieChart.InvalidatePlot(true);
+            return model;
         }
+        
+
     }
 }

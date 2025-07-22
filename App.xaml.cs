@@ -53,12 +53,22 @@ namespace PersonalAI
             services.AddTransient<EmotionTrendsWindow>();
             services.AddTransient<SettingsWindow>();
             services.AddTransient<ChatWindow>();
+            services.AddTransient<ThemeSettingsWindow>();
+            services.AddTransient<AIPersonalityWindow>();
         }
 
         private void Application_Startup(object sender, StartupEventArgs e)
         {
+            // โหลดและใช้ธีม
+            ThemeManager.Instance.ApplyTheme();
+            
             var mainWindow = _serviceProvider.GetService<MainWindow>();
-            mainWindow?.Show();
+            if (mainWindow != null)
+            {
+                // กำหนดสีพื้นหลังของหน้าต่างหลัก
+                mainWindow.Background = Application.Current.Resources["PrimaryBackgroundBrush"] as System.Windows.Media.Brush;
+                mainWindow.Show();
+            }
         }
     }
 }

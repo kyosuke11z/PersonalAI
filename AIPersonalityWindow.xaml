@@ -1,0 +1,160 @@
+<Window x:Class="PersonalAI.AIPersonalityWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:PersonalAI"
+        mc:Ignorable="d"
+        Title="ตั้งค่าบุคลิกภาพ AI" Height="650" Width="800"
+        WindowStartupLocation="CenterScreen">
+    
+    <!-- ใช้ธีมจาก Application.Resources -->
+    
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        
+        <!-- หัวข้อ -->
+        <TextBlock Grid.Row="0" Text="ตั้งค่าบุคลิกภาพ AI" FontSize="32" FontWeight="Bold" 
+                   Margin="0,0,0,20" Style="{StaticResource HeaderTextBlock}"/>
+        
+        <!-- เนื้อหา -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <StackPanel>
+                <!-- บุคลิกภาพที่กำหนดไว้ล่วงหน้า -->
+                <Border Style="{StaticResource CardPanel}" Margin="0,0,0,20">
+                    <StackPanel>
+                        <TextBlock Text="บุคลิกภาพที่กำหนดไว้ล่วงหน้า" Style="{StaticResource SubHeaderTextBlock}"/>
+                        <TextBlock Text="เลือกบุคลิกภาพที่กำหนดไว้ล่วงหน้าเพื่อใช้งานทันที" Margin="0,0,0,15"/>
+                        
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                            <Button Content="เป็นมิตร" Style="{StaticResource ModernButton}" Margin="0,0,10,0" 
+                                    Click="PredefinedPersonality_Click" Tag="เป็นมิตร"/>
+                            <Button Content="เป็นทางการ" Style="{StaticResource ModernButton}" Margin="0,0,10,0" 
+                                    Click="PredefinedPersonality_Click" Tag="เป็นทางการ"/>
+                            <Button Content="สนุกสนาน" Style="{StaticResource ModernButton}" 
+                                    Click="PredefinedPersonality_Click" Tag="สนุกสนาน"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+                
+                <!-- ข้อมูลพื้นฐาน -->
+                <Border Style="{StaticResource CardPanel}" Margin="0,0,0,20">
+                    <StackPanel>
+                        <TextBlock Text="ข้อมูลพื้นฐาน" Style="{StaticResource SubHeaderTextBlock}"/>
+                        
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            
+                            <TextBlock Grid.Row="0" Grid.Column="0" Text="ชื่อ:" Margin="0,0,15,10" VerticalAlignment="Center"/>
+                            <TextBox Grid.Row="0" Grid.Column="1" x:Name="NameTextBox" Style="{StaticResource ModernTextBox}" Margin="0,0,0,10"/>
+                            
+                            <TextBlock Grid.Row="1" Grid.Column="0" Text="เพศ:" Margin="0,0,15,10" VerticalAlignment="Center"/>
+                            <ComboBox Grid.Row="1" Grid.Column="1" x:Name="GenderComboBox" Margin="0,0,0,10" Padding="10,8">
+                                <ComboBoxItem Content="ชาย"/>
+                                <ComboBoxItem Content="หญิง"/>
+                                <ComboBoxItem Content="ไม่ระบุ"/>
+                            </ComboBox>
+                            
+                            <TextBlock Grid.Row="2" Grid.Column="0" Text="อายุ:" Margin="0,0,15,10" VerticalAlignment="Center"/>
+                            <TextBox Grid.Row="2" Grid.Column="1" x:Name="AgeTextBox" Style="{StaticResource ModernTextBox}" Margin="0,0,0,10"/>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+                
+                <!-- ลักษณะบุคลิกภาพ -->
+                <Border Style="{StaticResource CardPanel}" Margin="0,0,0,20">
+                    <StackPanel>
+                        <TextBlock Text="ลักษณะบุคลิกภาพ" Style="{StaticResource SubHeaderTextBlock}"/>
+                        <TextBlock Text="ปรับแต่งลักษณะบุคลิกภาพของ AI ตามที่คุณต้องการ" Margin="0,0,0,15"/>
+                        
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            
+                            <TextBlock Grid.Row="0" Grid.Column="0" Text="ความเป็นมิตร:" Margin="0,0,15,15" VerticalAlignment="Center"/>
+                            <Slider Grid.Row="0" Grid.Column="1" x:Name="FriendlinessSlider" Minimum="0" Maximum="10" 
+                                    TickFrequency="1" IsSnapToTickEnabled="True" Margin="0,0,15,15" ValueChanged="Slider_ValueChanged"/>
+                            <TextBlock Grid.Row="0" Grid.Column="2" x:Name="FriendlinessValueText" Text="7" VerticalAlignment="Center" MinWidth="20" TextAlignment="Center"/>
+                            
+                            <TextBlock Grid.Row="1" Grid.Column="0" Text="ความเป็นทางการ:" Margin="0,0,15,15" VerticalAlignment="Center"/>
+                            <Slider Grid.Row="1" Grid.Column="1" x:Name="FormalitySlider" Minimum="0" Maximum="10" 
+                                    TickFrequency="1" IsSnapToTickEnabled="True" Margin="0,0,15,15" ValueChanged="Slider_ValueChanged"/>
+                            <TextBlock Grid.Row="1" Grid.Column="2" x:Name="FormalityValueText" Text="5" VerticalAlignment="Center" MinWidth="20" TextAlignment="Center"/>
+                            
+                            <TextBlock Grid.Row="2" Grid.Column="0" Text="อารมณ์ขัน:" Margin="0,0,15,15" VerticalAlignment="Center"/>
+                            <Slider Grid.Row="2" Grid.Column="1" x:Name="HumorSlider" Minimum="0" Maximum="10" 
+                                    TickFrequency="1" IsSnapToTickEnabled="True" Margin="0,0,15,15" ValueChanged="Slider_ValueChanged"/>
+                            <TextBlock Grid.Row="2" Grid.Column="2" x:Name="HumorValueText" Text="6" VerticalAlignment="Center" MinWidth="20" TextAlignment="Center"/>
+                            
+                            <TextBlock Grid.Row="3" Grid.Column="0" Text="ความกระตือรือร้น:" Margin="0,0,15,15" VerticalAlignment="Center"/>
+                            <Slider Grid.Row="3" Grid.Column="1" x:Name="EnthusiasmSlider" Minimum="0" Maximum="10" 
+                                    TickFrequency="1" IsSnapToTickEnabled="True" Margin="0,0,15,15" ValueChanged="Slider_ValueChanged"/>
+                            <TextBlock Grid.Row="3" Grid.Column="2" x:Name="EnthusiasmValueText" Text="7" VerticalAlignment="Center" MinWidth="20" TextAlignment="Center"/>
+                            
+                            <TextBlock Grid.Row="4" Grid.Column="0" Text="ความเห็นอกเห็นใจ:" Margin="0,0,15,15" VerticalAlignment="Center"/>
+                            <Slider Grid.Row="4" Grid.Column="1" x:Name="EmpathySlider" Minimum="0" Maximum="10" 
+                                    TickFrequency="1" IsSnapToTickEnabled="True" Margin="0,0,15,15" ValueChanged="Slider_ValueChanged"/>
+                            <TextBlock Grid.Row="4" Grid.Column="2" x:Name="EmpathyValueText" Text="8" VerticalAlignment="Center" MinWidth="20" TextAlignment="Center"/>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+                
+                <!-- คำพูดประจำตัว -->
+                <Border Style="{StaticResource CardPanel}" Margin="0,0,0,20">
+                    <StackPanel>
+                        <TextBlock Text="คำพูดประจำตัว" Style="{StaticResource SubHeaderTextBlock}"/>
+                        
+                        <TextBlock Text="คำทักทาย:" Margin="0,0,0,5"/>
+                        <TextBox x:Name="GreetingTextBox" Style="{StaticResource ModernTextBox}" Margin="0,0,0,15" 
+                                 TextWrapping="Wrap" AcceptsReturn="True" Height="60"/>
+                        
+                        <TextBlock Text="คำอำลา:" Margin="0,0,0,5"/>
+                        <TextBox x:Name="FarewellTextBox" Style="{StaticResource ModernTextBox}" Margin="0,0,0,15" 
+                                 TextWrapping="Wrap" AcceptsReturn="True" Height="60"/>
+                    </StackPanel>
+                </Border>
+                
+                <!-- ความสนใจและความชอบ -->
+                <Border Style="{StaticResource CardPanel}">
+                    <StackPanel>
+                        <TextBlock Text="ความสนใจและความชอบ" Style="{StaticResource SubHeaderTextBlock}"/>
+                        
+                        <TextBlock Text="ความสนใจ (คั่นด้วยเครื่องหมายจุลภาค):" Margin="0,0,0,5"/>
+                        <TextBox x:Name="InterestsTextBox" Style="{StaticResource ModernTextBox}" Margin="0,0,0,15"/>
+                        
+                        <TextBlock Text="ความชอบ (คั่นด้วยเครื่องหมายจุลภาค):" Margin="0,0,0,5"/>
+                        <TextBox x:Name="PreferencesTextBox" Style="{StaticResource ModernTextBox}" Margin="0,0,0,15"/>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </ScrollViewer>
+        
+        <!-- ปุ่มด้านล่าง -->
+        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0">
+            <Button x:Name="SaveButton" Content="บันทึก" Style="{StaticResource ModernButton}" Margin="0,0,10,0" Click="SaveButton_Click"/>
+            <Button x:Name="CancelButton" Content="ยกเลิก" Style="{StaticResource SecondaryButton}" Click="CancelButton_Click"/>
+        </StackPanel>
+    </Grid>
+</Window>

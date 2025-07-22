@@ -1,0 +1,110 @@
+<Window x:Class="PersonalAI.ThemeSettingsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:PersonalAI"
+        mc:Ignorable="d"
+        Title="ตั้งค่าธีม" Height="400" Width="600"
+        WindowStartupLocation="CenterScreen">
+    
+    <!-- ใช้ธีมจาก Application.Resources -->
+    
+    <Window.Resources>
+        <Style x:Key="ThemeRadioButton" TargetType="RadioButton">
+            <Setter Property="Margin" Value="0,0,0,15"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="White"/>
+        </Style>
+        
+        <Style x:Key="LightThemeRadioButton" TargetType="RadioButton" BasedOn="{StaticResource ThemeRadioButton}">
+            <Setter Property="Foreground" Value="Black"/>
+        </Style>
+    </Window.Resources>
+    
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        
+        <!-- หัวข้อ -->
+        <TextBlock Grid.Row="0" Text="ตั้งค่าธีม" FontSize="32" FontWeight="Bold" 
+                   Margin="0,0,0,20" Foreground="White" Name="HeaderText"/>
+        
+        <!-- ตัวเลือกธีม -->
+        <Grid Grid.Row="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            
+            <TextBlock Grid.Row="0" Text="เลือกธีมที่คุณต้องการ" FontSize="20" FontWeight="SemiBold" Margin="0,0,0,15" Foreground="White" Name="SubHeaderText"/>
+            
+            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                <StackPanel Margin="0,20,0,0">
+                <RadioButton x:Name="DarkThemeRadio" Content="ธีมมืด (Dark Theme)" 
+                             Style="{StaticResource ThemeRadioButton}" Checked="ThemeRadio_Checked" Tag="Dark"/>
+                
+                <Border Style="{StaticResource CardPanel}" Background="#1A1B22" Height="60" Margin="30,0,0,20">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        
+                        <Rectangle Grid.Column="0" Fill="#2D2F39" Margin="5"/>
+                        <Rectangle Grid.Column="1" Fill="#4E4FEB" Margin="5"/>
+                        <Rectangle Grid.Column="2" Fill="#FF4D6A" Margin="5"/>
+                    </Grid>
+                </Border>
+                
+                <RadioButton x:Name="LightThemeRadio" Content="ธีมสว่าง (Light Theme)" 
+                             Style="{StaticResource LightThemeRadioButton}" Checked="ThemeRadio_Checked" Tag="Light"/>
+                
+                <Border Style="{StaticResource CardPanel}" Background="#F5F5F7" Height="60" Margin="30,0,0,20">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        
+                        <Rectangle Grid.Column="0" Fill="#FFFFFF" Margin="5"/>
+                        <Rectangle Grid.Column="1" Fill="#4E4FEB" Margin="5"/>
+                        <Rectangle Grid.Column="2" Fill="#FF4D6A" Margin="5"/>
+                    </Grid>
+                </Border>
+                
+                <RadioButton x:Name="BlueThemeRadio" Content="ธีมสีฟ้า (Blue Theme)" 
+                             Style="{StaticResource ThemeRadioButton}" Checked="ThemeRadio_Checked" Tag="Blue"/>
+                
+                <Border Style="{StaticResource CardPanel}" Background="#0A1929" Height="60" Margin="30,0,0,20">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        
+                        <Rectangle Grid.Column="0" Fill="#132F4C" Margin="5"/>
+                        <Rectangle Grid.Column="1" Fill="#66B2FF" Margin="5"/>
+                        <Rectangle Grid.Column="2" Fill="#FF4D6A" Margin="5"/>
+                    </Grid>
+                </Border>
+                </StackPanel>
+            </ScrollViewer>
+        </Grid>
+        
+        <!-- ปุ่มควบคุม -->
+        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0">
+            <Button x:Name="ApplyButton" Content="นำไปใช้" Style="{StaticResource ModernButton}" 
+                    Margin="0,0,10,0" Click="ApplyButton_Click" Foreground="White"/>
+            <Button x:Name="CloseButton" Content="ปิด" Style="{StaticResource SecondaryButton}" 
+                    Click="CloseButton_Click" Foreground="White"/>
+        </StackPanel>
+    </Grid>
+</Window>

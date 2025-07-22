@@ -40,8 +40,9 @@ namespace PersonalAI
             // กำหนดแหล่งข้อมูลสำหรับ ItemsControl
             ChatMessagesControl.ItemsSource = _chatMessages;
             
-            // เพิ่มข้อความต้อนรับจาก AI
-            AddAIMessage("สวัสดีครับ ฉันเป็น AI ส่วนตัวของคุณ คุณสามารถพูดคุยกับฉันได้เกี่ยวกับความรู้สึกหรือสิ่งที่คุณกำลังประสบอยู่ ฉันพร้อมรับฟังและให้คำแนะนำครับ");
+            // เพิ่มข้อความต้อนรับจาก AI ตามบุคลิกภาพที่กำหนด
+            var personality = AIPersonality.Instance;
+            AddAIMessage(personality.Greeting);
             
             // โหลดประวัติการแชทจากบริการ
             LoadChatHistory();
@@ -264,8 +265,9 @@ namespace PersonalAI
                 _chatService.ClearHistory();
                 _chatMessages.Clear();
                 
-                // เพิ่มข้อความต้อนรับใหม่
-                AddAIMessage("ประวัติการแชทถูกล้างแล้ว คุณสามารถเริ่มการสนทนาใหม่ได้เลยครับ");
+                // เพิ่มข้อความต้อนรับใหม่ตามบุคลิกภาพที่กำหนด
+                var personality = AIPersonality.Instance;
+                AddAIMessage("ประวัติการแชทถูกล้างแล้ว " + personality.Greeting);
             }
         }
 

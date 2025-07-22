@@ -6,6 +6,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
 
 namespace PersonalAI
 {
@@ -25,6 +26,9 @@ namespace PersonalAI
             _aiService = aiService;
             _dataService = dataService;
             _options = _aiService.GetOptions();
+            
+            // ใช้ธีมปัจจุบัน
+            this.Background = Application.Current.Resources["PrimaryBackgroundBrush"] as System.Windows.Media.Brush;
             
             // โหลดค่าเริ่มต้น
             LoadSettings();
@@ -227,38 +231,33 @@ namespace PersonalAI
         }
         
         /// <summary>
+        /// เปิดหน้าตั้งค่าธีม
+        /// </summary>
+        private void OpenThemeSettingsButton_Click(object sender, RoutedEventArgs e)
+        {
+            var themeSettingsWindow = new ThemeSettingsWindow();
+            themeSettingsWindow.Owner = this;
+            themeSettingsWindow.ShowDialog();
+        }
+        
+        /// <summary>
+        /// เปิดหน้าตั้งค่าบุคลิกภาพ AI
+        /// </summary>
+        private void OpenAIPersonalityButton_Click(object sender, RoutedEventArgs e)
+        {
+            var aiPersonalityWindow = new AIPersonalityWindow();
+            aiPersonalityWindow.Owner = this;
+            aiPersonalityWindow.ShowDialog();
+        }
+        
+        /// <summary>
         /// ล้างข้อมูลทั้งหมด
         /// </summary>
-        private async void ClearDataButton_Click(object sender, RoutedEventArgs e)
+        private void ClearDataButton_Click(object sender, RoutedEventArgs e)
         {
-            var result = MessageBox.Show(
-                "คุณแน่ใจหรือไม่ว่าต้องการล้างข้อมูลทั้งหมด? การกระทำนี้ไม่สามารถย้อนกลับได้",
-                "ยืนยันการล้างข้อมูล",
-                MessageBoxButton.YesNo,
-                MessageBoxImage.Warning);
-                
-            if (result == MessageBoxResult.Yes)
-            {
-                try
-                {
-                    await _dataService.ImportDataAsync(new List<EmotionEntry>(), new List<MusicGameItem>());
-                    UXHelper.ShowMessage("ล้างข้อมูลเรียบร้อยแล้ว");
-                }
-                catch (Exception ex)
-                {
-                    UXHelper.ShowError($"เกิดข้อผิดพลาดในการล้างข้อมูล: {ex.Message}");
-                }
-            }
+            // ยังไม่ได้ใส่โค้ด
         }
     }
     
-    /// <summary>
-    /// คลาสสำหรับเก็บข้อมูลที่จะส่งออก
-    /// </summary>
-    public class ExportData
-    {
-        public List<EmotionEntry> EmotionEntries { get; set; } = new();
-        public List<MusicGameItem> MusicGameItems { get; set; } = new();
-        public DateTime ExportDate { get; set; }
-    }
+
 }
