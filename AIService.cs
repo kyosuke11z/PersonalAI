@@ -1,122 +1,156 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
+using Anthropic.SDK;
+using Anthropic.SDK.Messaging;
 
 namespace PersonalAI
 {
     public class AIService
     {
-        private readonly HttpClient _httpClient;
-        private AIServiceOptions _options;
+        private readonly AIServiceOptions _options;
         private readonly string _configPath;
+        private AnthropicClient? _anthropicClient;
 
         public AIService(AIServiceOptions? options = null)
         {
-            _httpClient = new HttpClient();
-            
-            // กำหนดที่เก็บไฟล์การตั้งค่า
             string appDataPath = Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
                 "PersonalAICompanion");
-                
-            // สร้างโฟลเดอร์ถ้ายังไม่มี
             Directory.CreateDirectory(appDataPath);
-            
             _configPath = Path.Combine(appDataPath, "ai_settings.json");
-            
-            // โหลดการตั้งค่าจากไฟล์หรือใช้ค่าที่ให้มา
             _options = options ?? AIServiceOptions.LoadFromFile(_configPath);
-            
-            // ตั้งค่า API Key ถ้ามี
-            if (!string.IsNullOrEmpty(_options.ApiKey))
-            {
-                _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {_options.ApiKey}");
-            }
+            _anthropicClient = BuildClient();
+        }
+
+        private AnthropicClient? BuildClient()
+        {
+            if (!string.IsNullOrWhiteSpace(_options.AnthropicApiKey))
+                return new AnthropicClient(_options.AnthropicApiKey);
+            return null;
         }
 
         /// <summary>
-        /// ส่งคำถามไปยัง AI และรับคำตอบกลับ
+        /// ส่ง prompt เดี่ยว (ไม่มี history) และรับคำตอบแบบ non-streaming
+        /// ใช้สำหรับ emotion analysis, suggestions, recommendations
         /// </summary>
-        public async Task<string> GenerateResponseAsync(string prompt)
+        public async Task<string> GenerateResponseAsync(string prompt, string? systemPrompt = null)
         {
+            var messages = new List<Message>
+            {
+                new Message { Role = RoleType.User, Content = prompt }
+            };
+            return await SendMessagesAsync(messages, systemPrompt);
+        }
+
+        /// <summary>
+        /// ส่ง messages array จริงๆ (สำหรับ chat ที่มี history) แบบ non-streaming
+        /// </summary>
+        public async Task<string> SendMessagesAsync(
+            List<Message> messages,
+            string? systemPrompt = null)
+        {
+            if (_anthropicClient == null)
+                return "ยังไม่ได้ตั้งค่า Anthropic API Key กรุณาไปที่ Settings และใส่ API Key";
+
             try
             {
-                var requestData = new
-                {
-                    model = _options.ModelName,
-                    messages = new[]
-                    {
-                        new { role = "user", content = prompt }
-                    },
-                    max_tokens = _options.MaxTokens,
-                    temperature = _options.Temperature,
-                    stream = false
-                };
-
-                var content = new StringContent(
-                    JsonSerializer.Serialize(requestData),
-                    Encoding.UTF8,
-                    "application/json");
-
-                var response = await _httpClient.PostAsync(_options.Endpoint, content);
-                response.EnsureSuccessStatusCode();
-
-                var responseString = await response.Content.ReadAsStringAsync();
-                var responseObject = JsonSerializer.Deserialize<JsonElement>(responseString);
-
-                // พยายามหาข้อความตอบกลับในรูปแบบต่างๆ
-                if (responseObject.TryGetProperty("choices", out var choices) &&
-                    choices.GetArrayLength() > 0)
-                {
-                    // รูปแบบ OpenAI API
-                    if (choices[0].TryGetProperty("message", out var message) &&
-                        message.TryGetProperty("content", out var messageContent))
-                    {
-                        return messageContent.GetString() ?? string.Empty;
-                    }
-                    
-                    // รูปแบบ LM Studio
-                    if (choices[0].TryGetProperty("text", out var text))
-                    {
-                        return text.GetString() ?? string.Empty;
-                    }
-                }
-
-                return "ไม่สามารถแยกวิเคราะห์การตอบกลับจาก AI";
+                var parameters = BuildParameters(messages, systemPrompt, stream: false);
+                var response = await _anthropicClient.Messages.GetClaudeMessageAsync(parameters);
+                return ExtractText(response);
             }
             catch (Exception ex)
             {
                 return $"เกิดข้อผิดพลาด: {ex.Message}";
             }
         }
-        
+
         /// <summary>
-        /// รับการตั้งค่าปัจจุบัน
+        /// ส่ง messages array และรับ response แบบ streaming (IAsyncEnumerable)
+        /// แต่ละ chunk คือ string ย่อยๆ ที่ไหลออกมาทีละชิ้น
         /// </summary>
-        public AIServiceOptions GetOptions()
+        public async IAsyncEnumerable<string> StreamMessagesAsync(
+            List<Message> messages,
+            string? systemPrompt = null,
+            [EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
-            return _options;
+            if (_anthropicClient == null)
+            {
+                yield return "ยังไม่ได้ตั้งค่า Anthropic API Key";
+                yield break;
+            }
+
+            var parameters = BuildParameters(messages, systemPrompt, stream: true);
+
+            await foreach (var chunk in _anthropicClient.Messages
+                .StreamClaudeMessageAsync(parameters, cancellationToken))
+            {
+                if (cancellationToken.IsCancellationRequested)
+                    yield break;
+
+                var text = chunk?.Delta?.Text;
+                if (!string.IsNullOrEmpty(text))
+                    yield return text;
+            }
         }
-        
-        /// <summary>
-        /// อัปเดตการตั้งค่า
-        /// </summary>
+
+        public AIServiceOptions GetOptions() => _options;
+
         public void UpdateOptions(AIServiceOptions options)
         {
-            _options = options;
-            
-            // อัปเดต API Key ใน HttpClient
-            _httpClient.DefaultRequestHeaders.Remove("Authorization");
-            if (!string.IsNullOrEmpty(_options.ApiKey))
-            {
-                _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {_options.ApiKey}");
-            }
-            
-            // บันทึกการตั้งค่าลงไฟล์
+            _options.AnthropicApiKey = options.AnthropicApiKey;
+            _options.ModelName = options.ModelName;
+            _options.MaxTokens = options.MaxTokens;
+            _options.Temperature = options.Temperature;
+            _anthropicClient = BuildClient();
             _options.SaveToFile(_configPath);
+        }
+
+        private MessageParameters BuildParameters(
+            List<Message> messages,
+            string? systemPrompt,
+            bool stream)
+        {
+            var p = new MessageParameters
+            {
+                Messages = messages,
+                Model = _options.ModelName,
+                MaxTokens = _options.MaxTokens,
+                Temperature = (decimal)_options.Temperature,
+                Stream = stream
+            };
+
+            if (!string.IsNullOrWhiteSpace(systemPrompt))
+            {
+                p.System = new List<SystemMessage>
+                {
+                    new SystemMessage(systemPrompt)
+                };
+            }
+
+            return p;
+        }
+
+        private static string ExtractText(MessageResponse response)
+        {
+            if (response?.Content == null || response.Content.Count == 0)
+                return string.Empty;
+
+            var sb = new StringBuilder();
+            foreach (var block in response.Content)
+            {
+                if (block is TextContent tc)
+                    sb.Append(tc.Text);
+                else
+                    sb.Append(block.ToString());
+            }
+            return sb.ToString();
         }
     }
 }

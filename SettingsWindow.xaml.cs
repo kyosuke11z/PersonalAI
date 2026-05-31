@@ -45,29 +45,17 @@ namespace PersonalAI
         /// </summary>
         private void LoadSettings()
         {
-            AIServerUrlTextBox.Text = _options.ServerUrl;
-            APIKeyTextBox.Text = _options.ApiKey;
-            
-            // เลือกโมเดลที่ใช้อยู่
-            switch (_options.ModelName.ToLower())
+            AIServerUrlTextBox.Text = "Anthropic Claude API (api.anthropic.com)";
+            APIKeyTextBox.Text = _options.AnthropicApiKey;
+
+            ModelComboBox.SelectedIndex = _options.ModelName switch
             {
-                case "gamma":
-                    ModelComboBox.SelectedIndex = 0;
-                    break;
-                case "mistral":
-                    ModelComboBox.SelectedIndex = 1;
-                    break;
-                case "dolphin":
-                    ModelComboBox.SelectedIndex = 2;
-                    break;
-                case "llama":
-                    ModelComboBox.SelectedIndex = 3;
-                    break;
-                default:
-                    ModelComboBox.SelectedIndex = 0;
-                    break;
-            }
-            
+                "claude-opus-4-8"               => 0,
+                "claude-sonnet-4-6"             => 1,
+                "claude-haiku-4-5-20251001"     => 2,
+                _                               => 1
+            };
+
             MaxTokensSlider.Value = _options.MaxTokens;
             MaxTokensTextBlock.Text = $"{_options.MaxTokens} tokens";
         }
@@ -77,27 +65,13 @@ namespace PersonalAI
         /// </summary>
         private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
-            // อัปเดตการตั้งค่า
-            _options.ServerUrl = AIServerUrlTextBox.Text.Trim();
-            _options.ApiKey = APIKeyTextBox.Text.Trim();
-            
-            // อัปเดตชื่อโมเดล
-            switch (ModelComboBox.SelectedIndex)
+            _options.AnthropicApiKey = APIKeyTextBox.Text.Trim();
+            _options.ModelName = ModelComboBox.SelectedIndex switch
             {
-                case 0:
-                    _options.ModelName = "gamma";
-                    break;
-                case 1:
-                    _options.ModelName = "mistral";
-                    break;
-                case 2:
-                    _options.ModelName = "dolphin";
-                    break;
-                case 3:
-                    _options.ModelName = "llama";
-                    break;
-            }
-            
+                0 => "claude-opus-4-8",
+                2 => "claude-haiku-4-5-20251001",
+                _ => "claude-sonnet-4-6"
+            };
             _options.MaxTokens = (int)MaxTokensSlider.Value;
             
             // บันทึกการตั้งค่า
@@ -124,8 +98,7 @@ namespace PersonalAI
             {
                 var testOptions = new AIServiceOptions
                 {
-                    ServerUrl = AIServerUrlTextBox.Text.Trim(),
-                    ApiKey = APIKeyTextBox.Text.Trim(),
+                    AnthropicApiKey = APIKeyTextBox.Text.Trim(),
                     ModelName = _options.ModelName,
                     MaxTokens = (int)MaxTokensSlider.Value
                 };

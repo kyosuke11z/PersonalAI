@@ -28,6 +28,8 @@
     <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="8.0.0" />
     <PackageReference Include="Microsoft.ML" Version="3.0.0" />
     <PackageReference Include="OxyPlot.Wpf" Version="2.1.2" />
+    <PackageReference Include="Anthropic.SDK" Version="3.9.4" />
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.3.2" />
   </ItemGroup>
 
 </Project>
