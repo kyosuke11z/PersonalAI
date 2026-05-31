@@ -2,6 +2,7 @@ using System.IO;
 using System.Windows;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using PersonalAI.ViewModels;
 
 namespace PersonalAI
 {
@@ -47,6 +48,16 @@ namespace PersonalAI
             services.AddSingleton(recommendationService);
             services.AddSingleton(emotionAnalysisService);
             services.AddSingleton(emotionNotificationService);
+
+            // ลงทะเบียน ViewModel
+            services.AddSingleton(sp => new MainWindowViewModel(
+                sp.GetRequiredService<EmotionAnalysisService>(),
+                sp.GetRequiredService<DataService>(),
+                sp.GetRequiredService<AIService>(),
+                sp.GetRequiredService<ChatAIService>(),
+                sp.GetRequiredService<AdvancedEmotionAnalyzer>(),
+                sp.GetRequiredService<AdvancedRecommendationService>(),
+                sp.GetRequiredService<EmotionNotificationService>()));
 
             // ลงทะเบียนหน้าต่าง
             services.AddSingleton<MainWindow>();
